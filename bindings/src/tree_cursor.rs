@@ -114,9 +114,9 @@ impl Clone for TreeCursor<'_> {
     }
 }
 
-impl<'tree> IntoIterator for &'tree mut TreeCursor<'tree> {
+impl<'cursor, 'tree: 'cursor> IntoIterator for &'cursor mut TreeCursor<'tree> {
     type Item = Node<'tree>;
-    type IntoIter = TreeRecursiveWalker<'tree>;
+    type IntoIter = TreeRecursiveWalker<'cursor, 'tree>;
 
     fn into_iter(self) -> Self::IntoIter {
         let mut queue = VecDeque::new();
@@ -131,13 +131,13 @@ impl<'tree> IntoIterator for &'tree mut TreeCursor<'tree> {
     }
 }
 
-pub struct TreeRecursiveWalker<'tree> {
-    cursor: &'tree mut TreeCursor<'tree>,
+pub struct TreeRecursiveWalker<'cursor, 'tree: 'cursor> {
+    cursor: &'cursor mut TreeCursor<'tree>,
     queue: VecDeque<Node<'tree>>,
     root: Node<'tree>,
 }
 
-impl<'tree> Iterator for TreeRecursiveWalker<'tree> {
+impl<'tree> Iterator for TreeRecursiveWalker<'_, 'tree> {
     type Item = Node<'tree>;
 
     fn next(&mut self) -> Option<Self::Item> {
