@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Included inner `libloading::Error` in `grammar::Error` message ([#28](https://github.com/helix-editor/tree-house/pull/28))
 * Separated lifetimes of the tree cursor and tree in `TreeCursor::into_iter` ([5544c6c2](https://github.com/helix-editor/tree-house/commit/5544c6c2fbc66b3a26adbdf9c8f3b46770b2a362))
+* Added Redox in `endian.h` in the C library ([#32](https://github.com/helix-editor/tree-house/pull/32))
 
 ## [v0.2.2] - 2025-08-31
 
