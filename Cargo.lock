@@ -575,7 +575,7 @@ dependencies = [
 
 [[package]]
 name = "tree-house-bindings"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "cc",
  "libloading",
