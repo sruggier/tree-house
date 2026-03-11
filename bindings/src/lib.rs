@@ -37,12 +37,26 @@ impl Point {
 }
 
 #[repr(C)]
+#[non_exhaustive]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Range {
     pub start_point: Point,
     pub end_point: Point,
     pub start_byte: u32,
     pub end_byte: u32,
+}
+
+impl Range {
+    pub fn new(start_point: Point, end_point: Point, start_byte: u32, end_byte: u32) -> Range {
+        debug_assert!(start_point <= end_point);
+        debug_assert!(start_byte <= end_byte);
+        Range {
+            start_point,
+            end_point,
+            start_byte,
+            end_byte,
+        }
+    }
 }
 
 pub trait Input {

@@ -451,12 +451,12 @@ impl Syntax {
 
             let old_len = injections.len();
             intersect_ranges(mat.include_children, mat.node, &parent_ranges, |range| {
-                layer_data.ranges.push(tree_sitter::Range {
-                    start_point: tree_sitter::Point::ZERO,
-                    end_point: tree_sitter::Point::ZERO,
-                    start_byte: range.start,
-                    end_byte: range.end,
-                });
+                layer_data.ranges.push(tree_sitter::Range::new(
+                    tree_sitter::Point::ZERO,
+                    tree_sitter::Point::ZERO,
+                    range.start,
+                    range.end,
+                ));
                 injections.push(Injection {
                     range,
                     layer,
