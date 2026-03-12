@@ -695,6 +695,9 @@ fn intersect_ranges_impl(
             if parent_range.end >= range.end {
                 break;
             }
+            if parent_range.end <= start {
+                continue;
+            }
             if start != parent_range.end {
                 push_range(start..parent_range.end)
             }
