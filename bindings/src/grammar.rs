@@ -39,24 +39,24 @@ impl Grammar {
     ///
     /// `library_path` must be a valid tree sitter grammar
     pub unsafe fn new(name: &str, library_path: &Path) -> Result<Grammar, Error> {
-        unsafe {
-            let library = unsafe {
-                Library::new(library_path).map_err(|err| Error::DlOpen {
-                    err,
-                    path: library_path.to_owned(),
-                })?
-            };
-            let language_fn_name = format!("tree_sitter_{}", name.replace('-', "_"));
+        let language_fn_name = format!("tree_sitter_{}", name.replace('-', "_"));
+        let library = unsafe {
+            Library::new(library_path).map_err(|err| Error::DlOpen {
+                err,
+                path: library_path.to_owned(),
+            })?
+        };
+        let grammar = unsafe {
             let language_fn: Symbol<unsafe extern "C" fn() -> NonNull<GrammarData>> = library
                 .get(language_fn_name.as_bytes())
                 .map_err(|err| Error::DlSym {
                     err,
                     symbol: name.to_owned(),
                 })?;
-            let grammar = Grammar::from_grammar_data(language_fn())?;
-            std::mem::forget(library);
-            Ok(grammar)
-        }
+            Grammar::from_grammar_data(language_fn())?
+        };
+        std::mem::forget(library);
+        Ok(grammar)
     }
 
     fn from_grammar_data(ptr: NonNull<GrammarData>) -> Result<Grammar, Error> {
