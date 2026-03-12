@@ -284,12 +284,12 @@ impl InjectionsQuery {
     /// ```
     /// is possible and will always result in iteration order [range1, range2].
     /// This case should be handled by the calling function
-    fn execute<'a>(
+    fn execute<'a, T: LanguageLoader>(
         &'a self,
         node: &Node<'a>,
         source: RopeSlice<'a>,
-        loader: &'a impl LanguageLoader,
-    ) -> impl Iterator<Item = InjectionQueryMatch<'a>> + 'a {
+        loader: &'a T,
+    ) -> impl Iterator<Item = InjectionQueryMatch<'a>> + 'a + use<'a, T> {
         let mut cursor = InactiveQueryCursor::new(0..u32::MAX, TREE_SITTER_MATCH_LIMIT)
             .execute_query(&self.injection_query, node, source);
         let injection_content_capture = self.injection_content_capture.unwrap();
