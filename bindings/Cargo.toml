@@ -3,11 +3,11 @@ name = "tree-house-bindings"
 description = "Homey Rust bindings for the tree-sitter C library"
 authors = ["Pascal Kuthe <pascalkuthe@pm.me>"]
 version = "0.2.3"
-edition = "2021"
+edition = "2024"
 license = "MPL-2.0"
 repository = "https://github.com/helix-editor/tree-house"
 readme = "../README.md"
-rust-version = "1.76.0"
+rust-version = "1.85.0"
 
 [features]
 ropey = ["dep:ropey"]
