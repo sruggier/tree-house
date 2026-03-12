@@ -14,12 +14,12 @@ use crate::query_iter::{QueryIter, QueryIterEvent};
 use crate::{Language, Range, Syntax};
 
 macro_rules! w {
-    ($dst: expr$(, $($args: tt)*)?) => {{
+    ($dst: expr_2021$(, $($args: tt)*)?) => {{
         let _ = write!($dst$(, $($args)*)?);
     }};
 }
 macro_rules! wln {
-    ($dst: expr$(, $($args: tt)*)?) => {{
+    ($dst: expr_2021$(, $($args: tt)*)?) => {{
         let _ = writeln!($dst$(, $($args)*)?);
     }};
 }

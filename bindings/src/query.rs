@@ -292,7 +292,7 @@ impl Query {
     }
     /// Get the number of patterns in the query.
     #[must_use]
-    pub fn patterns(&self) -> impl ExactSizeIterator<Item = Pattern> {
+    pub fn patterns(&self) -> impl ExactSizeIterator<Item = Pattern> + use<> {
         (0..self.pattern_count() as u32).map(Pattern)
     }
 
@@ -473,7 +473,7 @@ enum RawQueryError {
     Language = 6,
 }
 
-extern "C" {
+unsafe extern "C" {
     /// Create a new query from a string containing one or more S-expression
     /// patterns. The query is associated with a particular language, and can
     /// only be run on syntax nodes parsed with that language. If all of the

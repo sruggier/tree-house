@@ -368,7 +368,7 @@ impl Syntax {
         self.map_injections(layer, None, edits);
         let layer_data = &mut self.layer_mut(layer);
         let Some(LanguageConfig {
-            injection_query: ref injections_query,
+            injection_query: injections_query,
             ..
         }) = loader.get_config(layer_data.language)
         else {

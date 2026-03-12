@@ -188,9 +188,9 @@ impl<'tree> Node<'tree> {
     }
 
     #[inline]
-    unsafe fn map(&self, f: unsafe extern "C" fn(NodeRaw) -> NodeRaw) -> Option<Node<'tree>> {
+    unsafe fn map(&self, f: unsafe extern "C" fn(NodeRaw) -> NodeRaw) -> Option<Node<'tree>> { unsafe {
         Node::from_raw(f(self.as_raw()))
-    }
+    }}
 
     /// Get this node's immediate parent.
     #[inline]
@@ -249,7 +249,7 @@ impl<'tree> Node<'tree> {
     ///
     /// If you're walking the tree recursively, you may want to use the
     /// [`TreeCursor`] APIs directly instead.
-    pub fn children(&self) -> impl ExactSizeIterator<Item = Node<'tree>> {
+    pub fn children(&self) -> impl ExactSizeIterator<Item = Node<'tree>> + use<'tree> {
         let mut cursor = TreeCursor::new(self);
         cursor.goto_first_child();
         (0..self.child_count()).map(move |_| {
@@ -275,7 +275,7 @@ impl Eq for Node<'_> {}
 unsafe impl Send for Node<'_> {}
 unsafe impl Sync for Node<'_> {}
 
-extern "C" {
+unsafe extern "C" {
     /// Get the node's type as a null-terminated string.
     fn ts_node_type(node: NodeRaw) -> *const c_char;
 

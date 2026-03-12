@@ -58,7 +58,7 @@ impl TextObjectQuery {
         node: Node<'a>,
         slice: RopeSlice<'a>,
         cursor: InactiveQueryCursor,
-    ) -> Option<impl Iterator<Item = CapturedNode<'a>>> {
+    ) -> Option<impl Iterator<Item = CapturedNode<'a>> + use<'a>> {
         self.capture_nodes_any(&[capture_name], node, slice, cursor)
     }
 
@@ -70,7 +70,7 @@ impl TextObjectQuery {
         node: Node<'a>,
         slice: RopeSlice<'a>,
         mut cursor: InactiveQueryCursor,
-    ) -> Option<impl Iterator<Item = CapturedNode<'a>>> {
+    ) -> Option<impl Iterator<Item = CapturedNode<'a>> + use<'a>> {
         let capture = capture_names
             .iter()
             .find_map(|cap| self.query.get_capture(cap))?;

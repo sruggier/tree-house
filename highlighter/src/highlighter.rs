@@ -356,7 +356,7 @@ impl<'a, 'tree: 'a, Loader: LanguageLoader> Highlighter<'a, 'tree, Loader> {
     }
 
     fn deactivate_layer(&mut self, injection: Injection) {
-        let LayerData {
+        let &mut LayerData {
             mut parent_highlights,
             ref mut dormant_highlights,
             ..

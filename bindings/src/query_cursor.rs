@@ -16,9 +16,9 @@ thread_local! {
 }
 
 /// SAFETY: must not call itself recursively
-unsafe fn with_cache<T>(f: impl FnOnce(&mut Vec<InactiveQueryCursor>) -> T) -> T {
+unsafe fn with_cache<T>(f: impl FnOnce(&mut Vec<InactiveQueryCursor>) -> T) -> T { unsafe {
     CURSOR_CACHE.with(|cache| f(&mut *cache.get()))
-}
+}}
 
 pub struct QueryCursor<'a, 'tree, I: Input> {
     query: &'a Query,
@@ -287,7 +287,7 @@ struct TSQueryMatch {
     captures: *const TSQueryCapture,
 }
 
-extern "C" {
+unsafe extern "C" {
     /// Advance to the next capture of the currently running query.
     /// If there is a capture, write its match to `*match` and its index within
     /// the matche's capture list to `*capture_index`. Otherwise, return `false`.

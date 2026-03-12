@@ -101,7 +101,7 @@ impl Parser {
             byte_index: u32,
             _position: Point,
             bytes_read: *mut u32,
-        ) -> *const u8 {
+        ) -> *const u8 { unsafe {
             let cursor = catch_unwind(AssertUnwindSafe(move || {
                 let input: &mut C = payload.cast().as_mut();
                 let cursor = input.cursor_at(byte_index);
@@ -120,7 +120,7 @@ impl Parser {
                     ptr::null()
                 }
             }
-        }
+        }}
         let input = ParserInputRaw {
             payload: NonNull::from(&mut input).cast(),
             read: read::<I>,
@@ -220,7 +220,7 @@ struct ParseOptions {
     progress_callback: Option<ProgressCallback>,
 }
 
-extern "C" {
+unsafe extern "C" {
     /// Create a new parser
     fn ts_parser_new() -> NonNull<ParserData>;
     /// Delete the parser, freeing all of the memory that it used.

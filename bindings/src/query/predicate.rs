@@ -19,7 +19,7 @@ macro_rules! bail {
 }
 
 macro_rules! ensure {
-    ($cond: expr, $($args:tt)*) => {{
+    ($cond: expr_2021, $($args:tt)*) => {{
         if !$cond {
             return Err(InvalidPredicateError::Other { msg: format!($($args)*).into() })
         }
@@ -432,7 +432,7 @@ impl TryFrom<PredicateStep> for PredicateArg {
     }
 }
 
-extern "C" {
+unsafe extern "C" {
     /// Get all of the predicates for the given pattern in the query. The
     /// predicates are represented as a single array of steps. There are three
     /// types of steps in this array, which correspond to the three legal values

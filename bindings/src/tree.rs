@@ -80,7 +80,7 @@ impl InputEdit {
     }
 }
 
-extern "C" {
+unsafe extern "C" {
     /// Create a shallow copy of the syntax tree. This is very fast. You need to
     /// copy a syntax tree in order to use it on more than one thread at a time,
     /// as syntax trees are not thread safe.

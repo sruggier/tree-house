@@ -162,7 +162,7 @@ impl<'tree> Iterator for TreeRecursiveWalker<'_, 'tree> {
     }
 }
 
-extern "C" {
+unsafe extern "C" {
     /// Create a new tree cursor starting from the given node.
     ///
     /// A tree cursor allows you to walk a syntax tree more efficiently than is
