@@ -16,9 +16,9 @@ thread_local! {
 }
 
 /// SAFETY: must not call itself recursively
-unsafe fn with_cache<T>(f: impl FnOnce(&mut Vec<InactiveQueryCursor>) -> T) -> T { unsafe {
-    CURSOR_CACHE.with(|cache| f(&mut *cache.get()))
-}}
+unsafe fn with_cache<T>(f: impl FnOnce(&mut Vec<InactiveQueryCursor>) -> T) -> T {
+    unsafe { CURSOR_CACHE.with(|cache| f(&mut *cache.get())) }
+}
 
 pub struct QueryCursor<'a, 'tree, I: Input> {
     query: &'a Query,

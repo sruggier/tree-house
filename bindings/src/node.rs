@@ -188,9 +188,9 @@ impl<'tree> Node<'tree> {
     }
 
     #[inline]
-    unsafe fn map(&self, f: unsafe extern "C" fn(NodeRaw) -> NodeRaw) -> Option<Node<'tree>> { unsafe {
-        Node::from_raw(f(self.as_raw()))
-    }}
+    unsafe fn map(&self, f: unsafe extern "C" fn(NodeRaw) -> NodeRaw) -> Option<Node<'tree>> {
+        unsafe { Node::from_raw(f(self.as_raw())) }
+    }
 
     /// Get this node's immediate parent.
     #[inline]

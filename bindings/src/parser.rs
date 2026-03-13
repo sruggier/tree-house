@@ -101,26 +101,28 @@ impl Parser {
             byte_index: u32,
             _position: Point,
             bytes_read: *mut u32,
-        ) -> *const u8 { unsafe {
-            let cursor = catch_unwind(AssertUnwindSafe(move || {
-                let input: &mut C = payload.cast().as_mut();
-                let cursor = input.cursor_at(byte_index);
-                let slice = cursor.chunk();
-                let offset: u32 = cursor.offset().try_into().unwrap();
-                let len: u32 = slice.len().try_into().unwrap();
-                (byte_index - offset, slice.as_ptr(), len)
-            }));
-            match cursor {
-                Ok((chunk_offset, ptr, len)) if chunk_offset < len => {
-                    *bytes_read = len - chunk_offset;
-                    ptr.add(chunk_offset as usize)
-                }
-                _ => {
-                    *bytes_read = 0;
-                    ptr::null()
+        ) -> *const u8 {
+            unsafe {
+                let cursor = catch_unwind(AssertUnwindSafe(move || {
+                    let input: &mut C = payload.cast().as_mut();
+                    let cursor = input.cursor_at(byte_index);
+                    let slice = cursor.chunk();
+                    let offset: u32 = cursor.offset().try_into().unwrap();
+                    let len: u32 = slice.len().try_into().unwrap();
+                    (byte_index - offset, slice.as_ptr(), len)
+                }));
+                match cursor {
+                    Ok((chunk_offset, ptr, len)) if chunk_offset < len => {
+                        *bytes_read = len - chunk_offset;
+                        ptr.add(chunk_offset as usize)
+                    }
+                    _ => {
+                        *bytes_read = 0;
+                        ptr::null()
+                    }
                 }
             }
-        }}
+        }
         let input = ParserInputRaw {
             payload: NonNull::from(&mut input).cast(),
             read: read::<I>,
