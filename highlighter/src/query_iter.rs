@@ -7,8 +7,8 @@ use hashbrown::{HashMap, HashSet};
 use ropey::RopeSlice;
 
 use crate::{
-    locals::{Scope, ScopeCursor},
     Injection, Language, Layer, Range, Syntax, TREE_SITTER_MATCH_LIMIT,
+    locals::{Scope, ScopeCursor},
 };
 use tree_sitter::{
     Capture, InactiveQueryCursor, Node, Pattern, Query, QueryCursor, QueryMatch, RopeInput,

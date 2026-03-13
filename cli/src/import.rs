@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::{fs, io};
 
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 use serde::Deserialize;
 use skidder::{Metadata, ParserDefinition};
 use walkdir::WalkDir;
@@ -149,7 +149,10 @@ impl Import {
                         .and_then(|json| serde_json::from_str(&json).ok());
                 if let Some(package_metadata) = package_metadata {
                     match &license {
-                        Some(license) if license != &package_metadata.license => eprintln!("warning: license in package identifier differs from detected license {license} != {}", &package_metadata.license),
+                        Some(license) if license != &package_metadata.license => eprintln!(
+                            "warning: license in package identifier differs from detected license {license} != {}",
+                            &package_metadata.license
+                        ),
                         _ => license = Some(package_metadata.license),
                     }
                 }

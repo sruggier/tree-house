@@ -15,8 +15,8 @@ use arc_swap::ArcSwap;
 use hashbrown::{HashMap, HashSet};
 use ropey::RopeSlice;
 use tree_sitter::{
-    query::{self, InvalidPredicateError, Query, UserPredicate},
     Capture, Grammar,
+    query::{self, InvalidPredicateError, Query, UserPredicate},
 };
 use tree_sitter::{Pattern, QueryMatch};
 
@@ -457,7 +457,8 @@ impl<'a, 'tree: 'a, Loader: LanguageLoader> Highlighter<'a, 'tree, Loader> {
             // The highlight is removed from `active_highlights` as the injection layer ends
             // so the wider assertion would be true in practice. We don't track the injection
             // end right here though so we can't assert on it.
-            self.current_layer_highlights().is_sorted_by_key(|h| cmp::Reverse(h.end)),
+            self.current_layer_highlights()
+                .is_sorted_by_key(|h| cmp::Reverse(h.end)),
             "unsorted highlights on layer {:?}: {:?}\nall active highlights must be sorted by `end` descending",
             self.current_layer,
             self.active_highlights,

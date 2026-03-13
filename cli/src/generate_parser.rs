@@ -3,8 +3,8 @@ use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 
-use anyhow::{ensure, Context, Result};
-use skidder::{decompress, Metadata};
+use anyhow::{Context, Result, ensure};
+use skidder::{Metadata, decompress};
 use tempfile::TempDir;
 
 use crate::collect_grammars;

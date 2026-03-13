@@ -1,12 +1,12 @@
-use std::ffi::{c_char, c_void, CStr};
+use std::ffi::{CStr, c_char, c_void};
 use std::fmt;
 use std::marker::PhantomData;
 use std::ops::Range;
 use std::ptr::NonNull;
 
+use crate::Grammar;
 use crate::tree::Tree;
 use crate::tree_cursor::TreeCursor;
-use crate::Grammar;
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]

@@ -1,5 +1,5 @@
-use crate::query::predicate::{InvalidPredicateError, Predicate};
 use crate::query::QueryStr;
+use crate::query::predicate::{InvalidPredicateError, Predicate};
 
 #[derive(Debug)]
 pub struct QueryProperty {

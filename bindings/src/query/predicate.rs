@@ -4,13 +4,13 @@ use std::ops::Range;
 use std::ptr::NonNull;
 use std::{fmt, slice};
 
+use crate::Input;
 use crate::query::property::QueryProperty;
 use crate::query::{Capture, Pattern, PatternData, Query, QueryData, QueryStr, UserPredicate};
 use crate::query_cursor::MatchedNode;
-use crate::Input;
 
-use regex_cursor::engines::meta::Regex;
 use regex_cursor::Cursor;
+use regex_cursor::engines::meta::Regex;
 
 macro_rules! bail {
     ($($args:tt)*) => {{

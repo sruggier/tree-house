@@ -15,8 +15,8 @@ use crate::locals::Locals;
 use crate::parse::LayerUpdateFlags;
 use crate::{Injection, Language, Layer, LayerData, Range, Syntax, TREE_SITTER_MATCH_LIMIT};
 use tree_sitter::{
-    query::{self, InvalidPredicateError, UserPredicate},
     Capture, Grammar, InactiveQueryCursor, MatchedNodeIdx, Node, Pattern, Query, QueryMatch,
+    query::{self, InvalidPredicateError, UserPredicate},
 };
 
 const SHEBANG: &str = r"#!\s*(?:\S*[/\\](?:env\s+(?:\-\S+\s+)*)?)?([^\s\.\d]+)";
@@ -293,23 +293,25 @@ impl InjectionsQuery {
         let mut cursor = InactiveQueryCursor::new(0..u32::MAX, TREE_SITTER_MATCH_LIMIT)
             .execute_query(&self.injection_query, node, source);
         let injection_content_capture = self.injection_content_capture.unwrap();
-        let iter = iter::from_fn(move || loop {
-            let (query_match, node_idx) = cursor.next_matched_node()?;
-            if query_match.matched_node(node_idx).capture != injection_content_capture {
-                continue;
+        let iter = iter::from_fn(move || {
+            loop {
+                let (query_match, node_idx) = cursor.next_matched_node()?;
+                if query_match.matched_node(node_idx).capture != injection_content_capture {
+                    continue;
+                }
+                let Some(mat) = self.process_match(&query_match, node_idx, source, loader) else {
+                    query_match.remove();
+                    continue;
+                };
+                let range = query_match.matched_node(node_idx).node.byte_range();
+                if mat.last_match {
+                    query_match.remove();
+                }
+                if range.is_empty() {
+                    continue;
+                }
+                break Some(mat);
             }
-            let Some(mat) = self.process_match(&query_match, node_idx, source, loader) else {
-                query_match.remove();
-                continue;
-            };
-            let range = query_match.matched_node(node_idx).node.byte_range();
-            if mat.last_match {
-                query_match.remove();
-            }
-            if range.is_empty() {
-                continue;
-            }
-            break Some(mat);
         });
         let mut buf = Vec::new();
         let mut iter = iter.peekable();

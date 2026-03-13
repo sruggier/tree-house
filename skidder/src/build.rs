@@ -4,12 +4,12 @@ use std::path::Path;
 use std::process::Command;
 use std::sync::OnceLock;
 
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 use sha1::{Digest, Sha1};
 use tempfile::TempDir;
 use walkdir::WalkDir;
 
-use crate::{decompress, Metadata, LIB_EXTENSION};
+use crate::{LIB_EXTENSION, Metadata, decompress};
 
 type Checksum = [u8; 20];
 fn is_fresh(grammar_dir: &Path, force: bool) -> Result<(Checksum, bool)> {

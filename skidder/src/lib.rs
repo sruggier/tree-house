@@ -3,12 +3,12 @@ use std::io::{BufReader, Read, Seek, SeekFrom, Write};
 use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-use std::sync::atomic::{self, AtomicUsize};
 use std::sync::Mutex;
+use std::sync::atomic::{self, AtomicUsize};
 use std::time::Duration;
 use std::{fs, io, thread};
 
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 use indicatif::{ProgressBar, ProgressStyle};
 use ruzstd::frame::ReadFrameHeaderError;
 use ruzstd::frame_decoder::FrameDecoderError;
@@ -281,18 +281,21 @@ pub fn build_all_grammars(
     let failed = Mutex::new(Vec::new());
     thread::scope(|scope| {
         for _ in 0..concurrency {
-            scope.spawn(|| loop {
-                let Some(grammar) = grammars.get(i.fetch_add(1, atomic::Ordering::Relaxed)) else {
-                    break;
-                };
-                let name = grammar.file_name().unwrap().to_str().unwrap();
-                if let Err(err) = build::build_grammar(name, grammar, force_rebuild) {
-                    for err in err.chain() {
-                        bar.println(format!("error: {err}"))
+            scope.spawn(|| {
+                loop {
+                    let Some(grammar) = grammars.get(i.fetch_add(1, atomic::Ordering::Relaxed))
+                    else {
+                        break;
+                    };
+                    let name = grammar.file_name().unwrap().to_str().unwrap();
+                    if let Err(err) = build::build_grammar(name, grammar, force_rebuild) {
+                        for err in err.chain() {
+                            bar.println(format!("error: {err}"))
+                        }
+                        failed.lock().unwrap().push(name.to_owned())
                     }
-                    failed.lock().unwrap().push(name.to_owned())
+                    bar.inc(1);
                 }
-                bar.inc(1);
             });
         }
     });

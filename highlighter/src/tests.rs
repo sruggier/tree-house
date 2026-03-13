@@ -52,11 +52,15 @@ fn get_grammar(lang_name: &str, overwrites: &Overwrites) -> LanguageConfig {
     let highlights_query_path = grammar_dir.join("highlights.scm");
     let injections_query_path = grammar_dir.join("injections.scm");
     if !injections_query_path.exists() {
-        println!("\x1b[36mskipping loading of injections for {lang_name:?} since {injections_query_path:?} does not exist\x1b[0m");
+        println!(
+            "\x1b[36mskipping loading of injections for {lang_name:?} since {injections_query_path:?} does not exist\x1b[0m"
+        );
     }
     let locals_query_path = grammar_dir.join("locals.scm");
     if !locals_query_path.exists() {
-        println!("\x1b[36mskipping loading of locals for {lang_name:?} since {locals_query_path:?} does not exist\x1b[0m");
+        println!(
+            "\x1b[36mskipping loading of locals for {lang_name:?} since {locals_query_path:?} does not exist\x1b[0m"
+        );
     }
     LanguageConfig::new(
         grammar,

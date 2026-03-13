@@ -1,10 +1,10 @@
 use once_cell::sync::Lazy;
 use regex::Regex;
-use tree_sitter::{query, Grammar};
+use tree_sitter::{Grammar, query};
 
+use crate::Language;
 use crate::highlighter::{Highlight, HighlightQuery};
 use crate::injections_query::{InjectionLanguageMarker, InjectionsQuery};
-use crate::Language;
 
 use std::fmt::Write;
 

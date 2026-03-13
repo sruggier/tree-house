@@ -1,6 +1,6 @@
 use std::cell::Cell;
 use std::os::raw::c_void;
-use std::panic::{catch_unwind, AssertUnwindSafe};
+use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::ptr::NonNull;
 use std::time::Duration;
 use std::{fmt, mem, ptr};

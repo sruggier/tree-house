@@ -1,7 +1,7 @@
 use ::std::os::raw;
 use std::cell::Cell;
 use std::collections::VecDeque;
-use std::ffi::{c_char, CStr};
+use std::ffi::{CStr, c_char};
 use std::marker::PhantomData;
 use std::{fmt, mem};
 

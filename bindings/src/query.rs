@@ -3,9 +3,9 @@ use std::ops::Range;
 use std::ptr::NonNull;
 use std::{slice, str};
 
+use crate::Grammar;
 use crate::query::predicate::TextPredicate;
 pub use crate::query::predicate::{InvalidPredicateError, Predicate};
-use crate::Grammar;
 
 mod predicate;
 mod property;
