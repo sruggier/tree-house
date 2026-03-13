@@ -648,25 +648,16 @@ fn intersect_ranges(
     let parent_ranges = parent_ranges[i..]
         .iter()
         .map(|range| range.start_byte..range.end_byte);
-    match include_children {
-        IncludedChildren::None => intersect_ranges_impl(
-            range,
-            node.children().map(|node| node.byte_range()),
-            parent_ranges,
-            push_range,
-        ),
-        IncludedChildren::All => {
-            intersect_ranges_impl(range, [].into_iter(), parent_ranges, push_range)
-        }
-        IncludedChildren::Unnamed => intersect_ranges_impl(
-            range,
-            node.children()
-                .filter(|node| node.is_named())
-                .map(|node| node.byte_range()),
-            parent_ranges,
-            push_range,
-        ),
-    }
+    let excluded_ranges = node
+        .children()
+        .filter(move |node| match include_children {
+            IncludedChildren::None => true,
+            IncludedChildren::All => false,
+            IncludedChildren::Unnamed => node.is_named(),
+        })
+        .map(|n| n.byte_range());
+
+    intersect_ranges_impl(range, excluded_ranges, parent_ranges, push_range);
 }
 
 fn intersect_ranges_impl(
