@@ -1,5 +1,5 @@
 use std::cmp::Reverse;
-use std::iter::{self, Peekable};
+use std::iter::{self, from_fn, Peekable};
 use std::mem::take;
 use std::sync::Arc;
 
@@ -450,7 +450,7 @@ impl Syntax {
             }
 
             let old_len = injections.len();
-            intersect_ranges(mat.include_children, mat.node, &parent_ranges, |range| {
+            for range in intersect_ranges(mat.include_children, mat.node, &parent_ranges) {
                 layer_data.ranges.push(tree_sitter::Range::new(
                     tree_sitter::Point::ZERO,
                     tree_sitter::Point::ZERO,
@@ -462,7 +462,7 @@ impl Syntax {
                     layer,
                     matched_node_range: matched_node_range.clone(),
                 });
-            });
+            }
             if old_len != insert_position {
                 let inserted = injections.len() - old_len;
                 injections[insert_position..].rotate_right(inserted);
@@ -637,12 +637,11 @@ impl Syntax {
     }
 }
 
-fn intersect_ranges(
+fn intersect_ranges<'tree, 'p>(
     include_children: IncludedChildren,
-    node: Node,
-    parent_ranges: &[tree_sitter::Range],
-    push_range: impl FnMut(Range),
-) {
+    node: Node<'tree>,
+    parent_ranges: &'p [tree_sitter::Range],
+) -> impl Iterator<Item = Range> + use<'tree, 'p> {
     let range = node.byte_range();
     let i = parent_ranges.partition_point(|parent_range| parent_range.end_byte <= range.start);
     let parent_ranges = parent_ranges[i..]
@@ -657,50 +656,125 @@ fn intersect_ranges(
         })
         .map(|n| n.byte_range());
 
-    intersect_ranges_impl(range, excluded_ranges, parent_ranges, push_range);
+    intersect_ranges_impl(range, excluded_ranges, parent_ranges)
 }
 
+/// Creates an iterator over the subtraction of one set of ranges from another.
+///
+/// Given two iterators that yield a sorted series of ranges, this function
+/// returns a new iterator that yields a series of ranges, equivalent to the
+/// ranges from the first iterator, but excluding any ranges returned by the
+/// second.
+///
+/// To reiterate, both iterators are assumed to return the ranges in sorted order.
+fn exclude_ranges(
+    mut ranges: impl Iterator<Item = Range>,
+    excluded_ranges: impl Iterator<Item = Range>,
+) -> impl Iterator<Item = Range> {
+    let mut excluded_ranges = excluded_ranges.filter(|range| !range.is_empty());
+    let mut next_range = ranges.next();
+    let mut current_excluded_range = excluded_ranges.next();
+    from_fn(move || {
+        loop {
+            let range = next_range.take()?;
+
+            // Consume any ranges that precede the rest of the input ranges
+            while let Some(excluded_range) = &current_excluded_range {
+                if excluded_range.end <= range.start {
+                    current_excluded_range = excluded_ranges.next()
+                } else {
+                    break;
+                }
+            }
+            // Handle the next exclusion, if applicable
+            if let Some(excluded_range) = &current_excluded_range {
+                if ranges_intersect(&range, excluded_range) {
+                    let preceding_range = range.start..excluded_range.start;
+                    let remaining_range = excluded_range.end..range.end;
+
+                    // Handle the rest of the range on the next iteration, if
+                    // applicable, or take the next one.
+                    if !remaining_range.is_empty() {
+                        next_range = Some(remaining_range);
+                        // This would also be handled by the loop above
+                        current_excluded_range = excluded_ranges.next()
+                    } else {
+                        next_range = ranges.next()
+                    }
+
+                    // Return any part of the range that preceded the exclusion
+                    if !preceding_range.is_empty() {
+                        return Some(preceding_range);
+                    } else {
+                        continue;
+                    }
+                }
+            }
+            // Return any ranges that precede the next excluded range
+            next_range = ranges.next();
+            return Some(range);
+        }
+    })
+}
+
+/// Return an iterator over the ranges resulting from intersection calculation.
+///
+/// Given a range, a set of ranges to exclude, and a set of parent ranges,
+/// this function calculates the intersection of range with the parent ranges,
+/// minus the excluded ranges.
 fn intersect_ranges_impl(
-    range: Range,
+    mut range: Range,
     excluded_ranges: impl Iterator<Item = Range>,
     parent_ranges: impl Iterator<Item = Range>,
-    mut push_range: impl FnMut(Range),
-) {
-    let mut start = range.start;
-    let mut excluded_ranges = excluded_ranges.filter(|range| !range.is_empty()).peekable();
-    let mut parent_ranges = parent_ranges.peekable();
-    loop {
-        let parent_range = parent_ranges.peek().unwrap().clone();
-        if let Some(excluded_range) =
-            excluded_ranges.next_if(|range| range.start <= parent_range.end)
-        {
-            if excluded_range.start >= range.end {
-                break;
-            }
-            if start != excluded_range.start {
-                push_range(start..excluded_range.start)
-            }
-            start = excluded_range.end;
-        } else {
-            parent_ranges.next();
-            if parent_range.end >= range.end {
-                break;
-            }
-            if parent_range.end <= start {
-                continue;
-            }
-            if start != parent_range.end {
-                push_range(start..parent_range.end)
-            }
-            let Some(next_parent_range) = parent_ranges.peek() else {
-                return;
+) -> impl Iterator<Item = Range> {
+    // Skip ranges that end before the start of range
+    let parent_ranges = parent_ranges.skip_while(move |r| r.end <= range.start);
+    // filter by the excluded ranges
+    let mut parent_ranges = exclude_ranges(parent_ranges, excluded_ranges).peekable();
+    let mut next_parent_range = parent_ranges.next();
+    from_fn(move || {
+        loop {
+            // If either range is exhausted, so is this iterator
+            let Some(parent_range) = &next_parent_range else {
+                return None;
             };
-            start = next_parent_range.start;
+            if range.is_empty() {
+                return None;
+            }
+
+            // Discard non-intersecting part of range
+            if parent_range.start > range.start {
+                range.start = parent_range.start;
+            }
+
+            // Consume some or all of the range
+            let intersection = range.start..std::cmp::min(range.end, parent_range.end);
+            range.start = intersection.end;
+
+            // Discard any parents that fully precede the new range
+            while let Some(parent_range) = &next_parent_range {
+                if parent_range.end <= range.start {
+                    next_parent_range = parent_ranges.next();
+                    // merge adjacent parent ranges
+                    if let Some(next_parent_range) = &mut next_parent_range {
+                        if let Some(next_next_range) = parent_ranges.peek() {
+                            if next_parent_range.end == next_next_range.start {
+                                next_parent_range.end = next_next_range.end;
+                                parent_ranges.next();
+                            }
+                        }
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            // Return the part of the range that was consumed
+            if !intersection.is_empty() {
+                return Some(intersection);
+            }
         }
-    }
-    if start != range.end {
-        push_range(start..range.end)
-    }
+    })
 }
 
 fn ranges_intersect(a: &Range, b: &Range) -> bool {
